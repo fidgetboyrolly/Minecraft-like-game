@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Fidget Script Game</title>
+</head>
+<body>
+    <h1>Welcome to My Fidget Script Game!</h1>
+    <div id="output"></div>
+    <script>
+        async function fetchGame() {
+            const response = await fetch("/run_fidget");
+            const result = await response.text();
+            document.getElementById("output").innerText = result;
+        }
+        fetchGame();
+    </script>
+</body>
+</html>
