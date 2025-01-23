@@ -1,0 +1,8 @@
+run = "python3 game.py"
+
+[deployment]
+run = ["python", "/run(game.py)"]
+
+[[ports]]
+localPort = 3000
+externalPort = 3000

@@ -1,0 +1,12 @@
+<!DOCTYPE FIDGET>
+<display>
+  <cam sys="mouse" />
+  <bg colour="sky blue" />
+</display>
+<functions>
+  <f id="move_forward" csv c="10px" s="player" v="x" />
+</functions>
+<entlist>
+  <sprite id="player" int="false" player="true" shape="400x400x400px" startpos="0x0y0z" />
+  <object id="ground" pos="0x410y0z" shape="1000x10x1000px" />
+</entlist>
