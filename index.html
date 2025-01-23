@@ -2,14 +2,61 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Upload Fidget Script</title>
+    <title>My Fidget Script Game</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        #output { white-space: pre; border: 1px solid #ddd; padding: 10px; margin-top: 20px; }
+    </style>
 </head>
 <body>
     <h1>Upload Your Fidget Script</h1>
-    <form action="https://your-replit-url/upload" method="post" enctype="multipart/form-data">
-        <input type="file" name="file" accept=".fidscy">
-        <button type="submit">Upload</button>
-    </form>
+    <input type="file" id="fileInput" accept=".fidscy">
     <div id="output"></div>
+
+    <script>
+        document.getElementById('fileInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const content = e.target.result;
+                    processFidgetScript(content);
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        function processFidgetScript(content) {
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(content, 'application/xml');
+
+            const display = xmlDoc.querySelector('display');
+            const cam = display.querySelector('cam');
+            const bg = display.querySelector('bg');
+            const functions = xmlDoc.querySelectorAll('f');
+            const sprites = xmlDoc.querySelectorAll('sprite');
+            const objects = xmlDoc.querySelectorAll('object');
+
+            let output = 'Processing Fidget Script...\n\n';
+            output += `Camera System: ${cam ? cam.getAttribute('sys') : 'N/A'}\n`;
+            output += `Background Colour: ${bg ? bg.getAttribute('colour') : 'N/A'}\n\n`;
+
+            functions.forEach(f => {
+                output += `Function: ${f.getAttribute('id')} (CSV: ${f.getAttribute('csv')})\n`;
+            });
+
+            output += '\nSprites:\n';
+            sprites.forEach(sprite => {
+                output += `- ID: ${sprite.getAttribute('id')}, Player: ${sprite.getAttribute('player')}\n`;
+            });
+
+            output += '\nObjects:\n';
+            objects.forEach(obj => {
+                output += `- ID: ${obj.getAttribute('id')}, Position: ${obj.getAttribute('pos')}\n`;
+            });
+
+            document.getElementById('output').textContent = output;
+        }
+    </script>
 </body>
 </html>
