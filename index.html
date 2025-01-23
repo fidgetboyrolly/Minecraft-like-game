@@ -2,18 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>My Fidget Script Game</title>
+    <title>Upload Fidget Script</title>
 </head>
 <body>
-    <h1>Welcome to My Fidget Script Game!</h1>
+    <h1>Upload Your Fidget Script</h1>
+    <form action="https://your-replit-url/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".fidscy">
+        <button type="submit">Upload</button>
+    </form>
     <div id="output"></div>
-    <script>
-        async function fetchGame() {
-            const response = await fetch("/run_fidget");
-            const result = await response.text();
-            document.getElementById("output").innerText = result;
-        }
-        fetchGame();
-    </script>
 </body>
 </html>
