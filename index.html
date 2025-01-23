@@ -5,16 +5,19 @@
     <title>My Fidget Script Game</title>
     <style>
         body { font-family: Arial, sans-serif; }
-        #fileInput { margin: 20px; }
-        #canvas { display: none; border: 1px solid #ddd; margin-top: 20px; }
+        #fileInputContainer { margin: 20px; }
+        #canvas { display: none; border: 1px solid #ddd; margin-top: 20px; width: 800px; height: 600px; }
+        #output { display: none; border: 1px solid #ddd; padding: 10px; margin-top: 20px; }
     </style>
 </head>
 <body>
-    <h1>Upload Your Fidget Script</h1>
-    <input type="file" id="fileInput" accept=".fidscy">
+    <div id="fileInputContainer">
+        <h1>Upload Your Fidget Script</h1>
+        <input type="file" id="fileInput" accept=".fidscy">
+    </div>
     <canvas id="canvas" width="800" height="600"></canvas>
+    <div id="output"></div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
         document.getElementById('fileInput').addEventListener('change', function(event) {
             const file = event.target.files[0];
@@ -34,60 +37,95 @@
 
             const display = xmlDoc.querySelector('display');
             const ren = display.querySelector('ren').getAttribute('value');
-            const canvas = document.getElementById('canvas');
-            canvas.style.display = 'block';
+            const fileInputContainer = document.getElementById('fileInputContainer');
+            fileInputContainer.style.display = 'none';
 
             if (ren === '3D') {
+                document.getElementById('canvas').style.display = 'block';
                 init3DGame(xmlDoc);
             } else {
+                document.getElementById('canvas').style.display = 'block';
                 init2DGame(xmlDoc);
             }
         }
 
         function init3DGame(xmlDoc) {
-            // Set up Three.js scene
-            const scene = new THREE.Scene();
-            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas') });
-            renderer.setSize(window.innerWidth, window.innerHeight);
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Create player cube
-            const playerGeometry = new THREE.BoxGeometry(1, 1, 1);
-            const playerMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-            const player = new THREE.Mesh(playerGeometry, playerMaterial);
-            scene.add(player);
+            // 3D Rendering with simple perspective projection
+            const fov = 500;
+            const cameraZ = 300;
 
-            // Create ground
-            const groundGeometry = new THREE.BoxGeometry(10, 0.1, 10);
-            const groundMaterial = new THREE.MeshBasicMaterial({ color: 0x888888 });
-            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-            ground.position.y = -1;
-            scene.add(ground);
+            function drawCube(x, y, z, size, color) {
+                const points = [
+                    { x: x - size / 2, y: y - size / 2, z: z - size / 2 },
+                    { x: x + size / 2, y: y - size / 2, z: z - size / 2 },
+                    { x: x + size / 2, y: y + size / 2, z: z - size / 2 },
+                    { x: x - size / 2, y: y + size / 2, z: z - size / 2 },
+                    { x: x - size / 2, y: y - size / 2, z: z + size / 2 },
+                    { x: x + size / 2, y: y - size / 2, z: z + size / 2 },
+                    { x: x + size / 2, y: y + size / 2, z: z + size / 2 },
+                    { x: x - size / 2, y: y + size / 2, z: z + size / 2 },
+                ];
 
-            camera.position.z = 5;
+                const projected = points.map(p => {
+                    const scale = fov / (fov + p.z + cameraZ);
+                    return { x: p.x * scale + canvas.width / 2, y: p.y * scale + canvas.height / 2 };
+                });
 
-            function animate() {
-                requestAnimationFrame(animate);
-                player.rotation.x += 0.01;
-                player.rotation.y += 0.01;
-                renderer.render(scene, camera);
+                ctx.strokeStyle = color;
+                ctx.beginPath();
+                // Draw front face
+                ctx.moveTo(projected[0].x, projected[0].y);
+                projected.slice(1, 4).forEach(p => ctx.lineTo(p.x, p.y));
+                ctx.closePath();
+                ctx.stroke();
+
+                // Draw back face
+                ctx.beginPath();
+                ctx.moveTo(projected[4].x, projected[4].y);
+                projected.slice(5, 8).forEach(p => ctx.lineTo(p.x, p.y));
+                ctx.closePath();
+                ctx.stroke();
+
+                // Draw connecting lines
+                for (let i = 0; i < 4; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(projected[i].x, projected[i].y);
+                    ctx.lineTo(projected[i + 4].x, projected[i + 4].y);
+                    ctx.closePath();
+                    ctx.stroke();
+                }
             }
-            animate();
+
+            const playerSprite = xmlDoc.querySelector('sprite[player="true"]');
+            drawCube(0, 0, 0, 50, 'green');
+
+            const groundObject = xmlDoc.querySelector('object');
+            drawCube(0, 100, 0, 400, 'gray');
         }
 
         function init2DGame(xmlDoc) {
             const canvas = document.getElementById('canvas');
             const ctx = canvas.getContext('2d');
 
-            // Player settings
-            const player = { x: 400, y: 300, size: 50, color: 'green' };
+            const playerSprite = xmlDoc.querySelector('sprite[player="true"]');
+            const player = {
+                x: 400,
+                y: 300,
+                size: 50,
+                color: 'green',
+                startpos: playerSprite.getAttribute('startpos')
+            };
 
-            // Draw player
             function drawPlayer() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.fillStyle = player.color;
                 ctx.fillRect(player.x, player.y, player.size, player.size);
             }
+
             drawPlayer();
         }
     </script>
