@@ -5,14 +5,16 @@
     <title>My Fidget Script Game</title>
     <style>
         body { font-family: Arial, sans-serif; }
-        #output { white-space: pre; border: 1px solid #ddd; padding: 10px; margin-top: 20px; }
+        #fileInput { margin: 20px; }
+        #canvas { display: none; border: 1px solid #ddd; margin-top: 20px; }
     </style>
 </head>
 <body>
     <h1>Upload Your Fidget Script</h1>
     <input type="file" id="fileInput" accept=".fidscy">
-    <div id="output"></div>
+    <canvas id="canvas" width="800" height="600"></canvas>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
         document.getElementById('fileInput').addEventListener('change', function(event) {
             const file = event.target.files[0];
@@ -31,31 +33,62 @@
             const xmlDoc = parser.parseFromString(content, 'application/xml');
 
             const display = xmlDoc.querySelector('display');
-            const cam = display.querySelector('cam');
-            const bg = display.querySelector('bg');
-            const functions = xmlDoc.querySelectorAll('f');
-            const sprites = xmlDoc.querySelectorAll('sprite');
-            const objects = xmlDoc.querySelectorAll('object');
+            const ren = display.querySelector('ren').getAttribute('value');
+            const canvas = document.getElementById('canvas');
+            canvas.style.display = 'block';
 
-            let output = 'Processing Fidget Script...\n\n';
-            output += `Camera System: ${cam ? cam.getAttribute('sys') : 'N/A'}\n`;
-            output += `Background Colour: ${bg ? bg.getAttribute('colour') : 'N/A'}\n\n`;
+            if (ren === '3D') {
+                init3DGame(xmlDoc);
+            } else {
+                init2DGame(xmlDoc);
+            }
+        }
 
-            functions.forEach(f => {
-                output += `Function: ${f.getAttribute('id')} (CSV: ${f.getAttribute('csv')})\n`;
-            });
+        function init3DGame(xmlDoc) {
+            // Set up Three.js scene
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas') });
+            renderer.setSize(window.innerWidth, window.innerHeight);
 
-            output += '\nSprites:\n';
-            sprites.forEach(sprite => {
-                output += `- ID: ${sprite.getAttribute('id')}, Player: ${sprite.getAttribute('player')}\n`;
-            });
+            // Create player cube
+            const playerGeometry = new THREE.BoxGeometry(1, 1, 1);
+            const playerMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+            const player = new THREE.Mesh(playerGeometry, playerMaterial);
+            scene.add(player);
 
-            output += '\nObjects:\n';
-            objects.forEach(obj => {
-                output += `- ID: ${obj.getAttribute('id')}, Position: ${obj.getAttribute('pos')}\n`;
-            });
+            // Create ground
+            const groundGeometry = new THREE.BoxGeometry(10, 0.1, 10);
+            const groundMaterial = new THREE.MeshBasicMaterial({ color: 0x888888 });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.position.y = -1;
+            scene.add(ground);
 
-            document.getElementById('output').textContent = output;
+            camera.position.z = 5;
+
+            function animate() {
+                requestAnimationFrame(animate);
+                player.rotation.x += 0.01;
+                player.rotation.y += 0.01;
+                renderer.render(scene, camera);
+            }
+            animate();
+        }
+
+        function init2DGame(xmlDoc) {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Player settings
+            const player = { x: 400, y: 300, size: 50, color: 'green' };
+
+            // Draw player
+            function drawPlayer() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = player.color;
+                ctx.fillRect(player.x, player.y, player.size, player.size);
+            }
+            drawPlayer();
         }
     </script>
 </body>
