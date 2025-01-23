@@ -6,7 +6,7 @@
     <style>
         body { font-family: Arial, sans-serif; }
         #fileInputContainer { margin: 20px; }
-        #canvas { display: none; border: 1px solid #ddd; margin-top: 20px; width: 800px; height: 600px; }
+        #canvas { display: none; border: 1px solid #ddd; margin-top: 20px; width: 100%; height: 100vh; }
     </style>
 </head>
 <body>
@@ -49,24 +49,23 @@
             const canvas = document.getElementById('canvas');
             const ctx = canvas.getContext('2d');
 
-            // 3D Game Initialization Logic
             const playerSprite = xmlDoc.querySelector('sprite[player="true"]');
-            const playerStartPos = playerSprite.getAttribute('startpos').match(/\d+/g).map(Number);
-            const playerSize = playerSprite.getAttribute('shape').match(/\d+/g).map(Number)[0];
+            const playerPos = playerSprite.getAttribute('startpos').match(/-?\d+/g).map(Number);
+            const playerSize = parseInt(playerSprite.getAttribute('shape').match(/\d+/)[0]);
 
             const groundObject = xmlDoc.querySelector('object');
-            const groundPos = groundObject.getAttribute('pos').match(/\d+/g).map(Number);
-            const groundShape = groundObject.getAttribute('shape').match(/\d+/g).map(Number);
+            const groundPos = groundObject.getAttribute('pos').match(/-?\d+/g).map(Number);
+            const groundSize = groundObject.getAttribute('shape').match(/\d+/g).map(Number);
 
             function drawCube(x, y, z, size, color) {
                 ctx.fillStyle = color;
-                ctx.fillRect(x - size / 2, canvas.height - (y + size / 2), size, size);
+                ctx.fillRect(x - size / 2, canvas.height - y - size / 2, size, size);
             }
 
             function draw3DScene() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                drawCube(playerStartPos[0], playerStartPos[1], playerStartPos[2], playerSize, 'lightgray');
-                drawCube(groundPos[0], groundPos[1], groundPos[2], groundShape[0], 'darkgray');
+                drawCube(playerPos[0], playerPos[1], playerPos[2], playerSize, 'lightgray');
+                drawCube(groundPos[0], groundPos[1], groundPos[2], groundSize[0], 'darkgray');
             }
 
             function animate() {
@@ -80,14 +79,13 @@
             const canvas = document.getElementById('canvas');
             const ctx = canvas.getContext('2d');
 
-            // 2D Game Initialization Logic
             const playerSprite = xmlDoc.querySelector('sprite[player="true"]');
-            const playerStartPos = playerSprite.getAttribute('startpos').match(/\d+/g).map(Number);
-            const playerSize = playerSprite.getAttribute('shape').match(/\d+/g).map(Number)[0];
+            const playerPos = playerSprite.getAttribute('startpos').match(/-?\d+/g).map(Number);
+            const playerSize = parseInt(playerSprite.getAttribute('shape').match(/\d+/)[0]);
 
             const groundObject = xmlDoc.querySelector('object');
-            const groundPos = groundObject.getAttribute('pos').match(/\d+/g).map(Number);
-            const groundShape = groundObject.getAttribute('shape').match(/\d+/g).map(Number);
+            const groundPos = groundObject.getAttribute('pos').match(/-?\d+/g).map(Number);
+            const groundSize = groundObject.getAttribute('shape').match(/\d+/g).map(Number);
 
             function drawRectangle(x, y, width, height, color) {
                 ctx.fillStyle = color;
@@ -96,8 +94,8 @@
 
             function draw2DScene() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                drawRectangle(playerStartPos[0], playerStartPos[1], playerSize, playerSize, 'lightgray');
-                drawRectangle(groundPos[0], groundPos[1], groundShape[0], groundShape[1], 'darkgray');
+                drawRectangle(playerPos[0], playerPos[1], playerSize, playerSize, 'lightgray');
+                drawRectangle(groundPos[0], groundPos[1], groundSize[0], groundSize[1], 'darkgray');
             }
 
             function animate() {
